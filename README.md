@@ -20,7 +20,7 @@ the solution incorporates 5 projects:
 
 - [x] CLI (exe)
 
-        -- a very simple test application, which feeds one h264 frame(I) repeated to the server. 
+        -- a very simple test application, which feeds one h264 frame(I) repeatedly to the server. 
 - [x] RTSPLive (dll)
 
         -- the RTSP streamer, which implements the RTSP protocol and accepts requests from different players.
