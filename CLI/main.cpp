@@ -7,7 +7,7 @@ int main()
     rtsp->start();
 
     RTSP_avc_init_param init;
-    init.pack       = RTSP_AVC_RFC;
+    init.pack       = RTSP_AVC_ANNEXB;
     init.sps        = "\x67\x64\x00\x28\xac\x72\x04\x41\x60\x96\x84\x00\x00\x03\x00\x04\x00\x00\x03\x00\xf0\x3c\x60\xc6\x11\x80";
     init.sps_len    = 26;
     init.pps        = "\x68\xe8\x43\xb2\xc8\xb0";
