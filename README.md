@@ -3,6 +3,9 @@ media streaming server using RTSP
 
 RTSPLive servers as a media streamer using RTSP
 
+with it you could stream a media file(using RTSPRenderer.dll in GraphEdit, no additional codes are required),
+or you could use RTSPLive.dll and feed it with frames(from media files or cameras etc.) to stream them.
+
 Codecs
 ------
 
