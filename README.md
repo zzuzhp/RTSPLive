@@ -9,7 +9,7 @@ or you could use RTSPLive.dll and feed it with frames(from media files or camera
 Codecs
 ------
 
-currently the player supports the following codecs:
+currently the server supports the following codec(s):
 
 - [x] h264(avc)
 
@@ -41,10 +41,10 @@ use of RTSPRenderer.dll:
 you can access the stream from either a vlc player:
 <img src="https://user-images.githubusercontent.com/8287989/27899752-1e219284-625e-11e7-8fcb-1c2c4a6404b9.PNG" height="514px" >
 
-or using ffplay:
+or ffplay:
 <img src="https://user-images.githubusercontent.com/8287989/27899756-20c5ca46-625e-11e7-93ba-1c8cabd5db68.PNG" height="443px" >
 
-or using any player on your phone that support RTSP protocol:
+or any player on your mobile devices that support RTSP protocol:
 
 <img src="https://user-images.githubusercontent.com/8287989/27899860-8d303824-625e-11e7-899e-8e26c12d6dac.jpeg" height="623px" >
 
@@ -52,7 +52,7 @@ and, this is the CLI project stream(played by vlc):
 
 <img src="https://user-images.githubusercontent.com/8287989/27899957-ef571fea-625e-11e7-895c-bb4a10edaf94.PNG" height="414px" >
 
-how to compile
+Compile
 ------
 RTSPLive is developed on VS2015 (win7 64bit)
 
@@ -66,8 +66,10 @@ in the solution(no need to download ASIO).
 
 if you have any questions about RTSPLive, please let me known at: pengzhao218@126.com
 
-todo
+Todo
 ------
 many... 
-RTCP/more RTSP commands/UDP optimization for multiplayers/support for other codec...
+
+RTP/AVP/TCP & RTCP & more RTSP commands & UDP optimization for multiplayers & more codecs ...
+
 BUT, i don't bother to finish them, i'm bored...
