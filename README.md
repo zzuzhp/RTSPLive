@@ -58,10 +58,22 @@ RTSPLive is developed on VS2015 (win7 64bit)
 
 I only configured the debug(x86) solution, nothing else is tested...
 
+RTSPRenderer.dll is a dshow render filter, to build it you need to:
+
+1.   build dshow baseclasses(which is incorporated in the windows SDK).
+
+2.   specify the include and library path to dshow for project 'RTSPRenderer'.
+
+3.   register the filter by running command 'regsvr32' on the windows command shell(you'd better write a 'bat' file and run the file in 'Administrator mode').
+
+4.   open GraphStudio.exe (http://blog.monogram.sk/janos/tools/monogram-graphstudio/) and insert a media file source filter that contains a H264 stream, and a demuxer, and our renderer named "RTSP Renderer".
+
+5.   run the graph, and now the server is streaming the file.
+
 RTSPRenderer is the only project that depends on the OS(windows), because it is a dshow filter :), other projects
 should be OS independent.
 
-More, UTE is the only project that has dependency on other open-source project(ASIO), which has already been included
+UTE is the only project that has dependency on other open-source project(ASIO), which has already been included
 in the solution(no need to download ASIO).
 
 if you have any questions about RTSPLive, please let me known at: pengzhao218@126.com
