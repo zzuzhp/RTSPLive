@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 
+class RtcpPacket;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //// decode/encode a RTSP(RFC2326) message
 
@@ -51,7 +52,8 @@ struct RTSP_Setup
 {
     bool        tcp;            ///< tcp or udp
     bool        unicast;        ///< unicast or multicast
-    uint16_t    port_base;      ///< client_port: 
+    uint16_t    port_base;      ///< UDP: client_port: 
+    uint8_t     interleaved[2]; ///< TCP: interleaved
     int         stream;         ///< stream id : -1 if absent
 
     /* response */
@@ -102,6 +104,8 @@ public:
     virtual void on_rtsp_play(uint32_t id, RTSPRequest * request, RTSP_Play * param) = 0;
 
     virtual void on_rtsp_teardown(uint32_t id, RTSPRequest * request, RTSP_Teardown * param) = 0;
+
+    virtual void on_rtcp(uint32_t id, RtcpPacket *rtcp) = 0;
 };
 
 class RTSPMessager : public IUTEAcceptorObserver,
@@ -115,11 +119,13 @@ public:
 
     void send_response(uint32_t id, RTSPRequest * request, std::string status, std::string phrase, void * arg);
 
+    std::shared_ptr<IUTETransport> rtsp_transport(uint32_t id);
+
 private:
 
     bool create_request(std::string str, RTSPRequest ** request);
 
-    void parse_header(std::string line, RTSPRequest * request);
+    bool parse_header(std::string line, RTSPRequest * request);
 
     bool parse_transport(std::string line, RTSP_Setup * param);
 
@@ -131,7 +137,7 @@ private:
 
     bool check_request(RTSPRequest * request);
 
-    uint32_t get_client(std::shared_ptr<IUTETransport> transport);
+    uint32_t get_client_id(std::shared_ptr<IUTETransport> transport);
 
     int get_stream_id(std::string url);
 
@@ -140,9 +146,9 @@ private:
 
     void on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len);
 
-    void on_send(std::shared_ptr<IUTETransport> transport, int len) { XULOG_D("RTSPMessager send %d bytes.", len); }
+    void on_send(std::shared_ptr<IUTETransport> transport, int len) { /* XULOG_D("RTSPMessager send %d bytes.", len); */ }
 
-    void on_message(std::shared_ptr<IUTETransport> transport, int code, const char * message, void * arg) { XULOG_D("RTSPMessager message: %s", message); }
+    void on_message(std::shared_ptr<IUTETransport> transport, int code, const char * message, void * arg) { /* XULOG_D("RTSPMessager message: %s", message); */ }
 
 private:
 

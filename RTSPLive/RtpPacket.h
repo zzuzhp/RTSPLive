@@ -86,6 +86,10 @@ public:
 
     static RtpPacket * create_instance(const void * payload, uint16_t size);
 
+    static const int max_payload_size() { return 1200; }
+
+    static const int max_packet_size() { return sizeof(RTP_HEADER) + max_payload_size(); }
+
     ~RtpPacket();
 
     void set_marker(bool m);

@@ -3,6 +3,7 @@
 
 #include "AVStream.h"
 #include "UTE/UTE.h"
+#include "XUtil/XUMutex.h"
 #include "XUtil/XULog.h"
 
 #include <list>
@@ -21,6 +22,8 @@ struct NetStream
 {
     bool                             active;
     bool                             sync;
+    uint8_t                          channelid[2];
+    char                           * interpkt;
     IAVStream                      * stream;
     std::shared_ptr<IUTETransport>   transport;
 };
@@ -39,6 +42,8 @@ public:
     ~RTSPClient();
 
     bool add_stream(IAVStream * stream, uint16_t host_port, std::string ip = "", uint16_t port = 0);
+
+    bool add_stream(IAVStream * stream, std::shared_ptr<IUTETransport> transport, uint8_t *channelid);
 
     void del_stream(IAVStream * stream);
 
@@ -72,6 +77,7 @@ private:
     std::vector<NetStream *>    m_streams;
     std::string                 m_session; ///< random number as the 'Session' field in response to RTSP 'Setup' method.
     std::string                 m_host;
+    XUMutex                     m_lock;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

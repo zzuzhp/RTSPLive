@@ -16,7 +16,7 @@ AVCStream::AVCStream(uint32_t id, RTSP_avc_init_param *init_param) : VideoStream
                                                                      m_first(true),
                                                                      m_pack(RTSP_AVC_RFC),
                                                                      m_fua_packet(nullptr),
-                                                                     m_max_packet_size(1200)
+                                                                     m_max_packet_size(RtpPacket::max_payload_size())
 {
     m_type = RTSP_MEDIA_AVC; 
     m_name = "H264"; ///< rfc6184
@@ -50,11 +50,12 @@ AVCStream::~AVCStream()
 void 
 AVCStream::push_frame(char * data, int len, uint32_t ts)
 {
+    ++m_frames;
     m_framerate.push_data(1);
     
-    if (++m_frames % 300 == 0)
+    if (m_frames % 300 == 0)
     {
-        XULOG_D("AVCStream input framerate: %f.", m_framerate.bitrate());
+        ///< XULOG_D("AVCStream input framerate: %f.", m_framerate.bitrate());
     }
 
     if (m_first)
@@ -67,6 +68,7 @@ AVCStream::push_frame(char * data, int len, uint32_t ts)
 
     if (m_pack == RTSP_AVC_RFC)
     {
+        /* not supported now */
         //send_packet(data, len, ts, );
     }
     else if (m_pack == RTSP_AVC_ANNEXB)

@@ -126,7 +126,7 @@ RTSPCore::add_stream(RTSP_MEDIA type, void *init_param)
 }
 
 void 
-RTSPCore::push_stream(uint32_t streamId, RTSP_media_frame * frame)
+RTSPCore::push_stream(uint32_t streamId, RTSP_media_frame *frame)
 {
     XUMutexGuard mon(m_lock);
 
@@ -195,21 +195,21 @@ RTSPCore::on_new_client(std::string ip, uint16_t port)
 }
 
 void 
-RTSPCore::on_rtsp_options(uint32_t clientId, RTSPRequest * request)
+RTSPCore::on_rtsp_options(uint32_t clientId, RTSPRequest *request)
 {
     XULOG_D("message: OPTIONS from client: %d.", clientId);
     m_messager->send_response(clientId, request, "200", "OK", nullptr);
 }
 
 void
-RTSPCore::on_rtsp_describe(uint32_t clientId, RTSPRequest * request)
+RTSPCore::on_rtsp_describe(uint32_t clientId, RTSPRequest *request)
 {
     XULOG_D("message: DESCRIBE from client: %d.", clientId);
     m_messager->send_response(clientId, request, "200", "OK", (void *)(m_sdpenc->sdp().c_str()));
 }
 
 void
-RTSPCore::on_rtsp_setup(uint32_t clientId, RTSPRequest * request, RTSP_Setup * setup)
+RTSPCore::on_rtsp_setup(uint32_t clientId, RTSPRequest *request, RTSP_Setup *setup)
 {
     XULOG_D("message: SETUP from client: %d.", clientId);
 
@@ -238,8 +238,21 @@ RTSPCore::on_rtsp_setup(uint32_t clientId, RTSPRequest * request, RTSP_Setup * s
     }
     else
     {
-        setup->s_port_base = get_rtp_port(); //TODO: port wraps
-        if (client->add_stream(stream, setup->port_base, "", setup->s_port_base))
+        bool ret = false;
+        if (setup->tcp)
+        {
+            /* Certain firewall designs and other circumstances may force a server
+               to interleave RTSP methods and stream data. Interleaved binary
+               data SHOULD only be used if RTSP is carried over TCP.*/
+            ret = client->add_stream(stream, m_messager->rtsp_transport(clientId), setup->interleaved);
+        }
+        else
+        {
+            setup->s_port_base = get_rtp_port(); //TODO: port wraps
+            ret = client->add_stream(stream, setup->port_base, "", setup->s_port_base);
+        }
+
+        if (ret)
         {
             /*TODO: check for socket bind failure due to port unavailable(occupied) */
             setup->session = client->session();
@@ -254,7 +267,7 @@ RTSPCore::on_rtsp_setup(uint32_t clientId, RTSPRequest * request, RTSP_Setup * s
 }
 
 void
-RTSPCore::on_rtsp_play(uint32_t clientId, RTSPRequest * request, RTSP_Play * play)
+RTSPCore::on_rtsp_play(uint32_t clientId, RTSPRequest *request, RTSP_Play *play)
 {
     XULOG_D("message: PLAY from client: %d.", clientId);
 
@@ -281,7 +294,7 @@ RTSPCore::on_rtsp_play(uint32_t clientId, RTSPRequest * request, RTSP_Play * pla
 }
 
 void
-RTSPCore::on_rtsp_teardown(uint32_t clientId, RTSPRequest * request, RTSP_Teardown * tear)
+RTSPCore::on_rtsp_teardown(uint32_t clientId, RTSPRequest *request, RTSP_Teardown *tear)
 {
     XULOG_D("message: TEARDOWN from client: %d.", clientId);
 
@@ -302,18 +315,24 @@ RTSPCore::on_rtsp_teardown(uint32_t clientId, RTSPRequest * request, RTSP_Teardo
             (*itr)->remove_observer(client);
         }
     }
-
+#if 0
     if (client->stream_size() == 0)
     {
         /* no streams: del this client */
         delete client;
         remove_client(clientId);
     }
-
+#endif
     m_messager->send_response(clientId, request, "200", "OK", tear);
 }
 
-void 
+void
+RTSPCore::on_rtcp(uint32_t id, RtcpPacket *rtcp)
+{
+
+}
+
+void
 RTSPCore::on_time_out(RTSPClient * client)
 {
     XULOG_D("client timed out!");

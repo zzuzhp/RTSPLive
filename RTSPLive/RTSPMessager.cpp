@@ -1,4 +1,6 @@
 #include "RTSPMessager.h"
+#include "RtcpPacket.h"
+#include "InterleavedFrame.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -18,6 +20,7 @@
 #define RTSP_TRANS_MULTICAST    "multicast"
 #define RTSP_CLIENT_PORT        "client_port="
 #define RTSP_SERVER_PORT        "server_port="
+#define RTSP_INTERLEAVED        "interleaved="
 #define RTSP_FIELD(x, r)        (std::string(x) + std::string(": ") + std::string(get_field(r, x)))
 #define RTSPMETHOD(m)           {RTSPMethod::METHOD::RTSP_METHOD_##m, #m}
 
@@ -55,7 +58,7 @@ RTSPMessager::~RTSPMessager()
 }
 
 bool 
-RTSPMessager::create_request(std::string str, RTSPRequest ** request)
+RTSPMessager::create_request(std::string str, RTSPRequest **request)
 {
     std::string::size_type   pos        = 0;
     std::string::size_type   start_pos  = 0;
@@ -65,8 +68,6 @@ RTSPMessager::create_request(std::string str, RTSPRequest ** request)
     {
         return false;
     }
-
-    *request = new RTSPRequest;
 
     while ((pos = str.find(RTSP_ENDLINE, start_pos)) != std::string::npos)
     {
@@ -80,6 +81,13 @@ RTSPMessager::create_request(std::string str, RTSPRequest ** request)
         start_pos = pos + std::string(RTSP_ENDLINE).length();
     }
 
+    if (lines.empty())
+    {
+        return false;
+    }
+
+    *request = new RTSPRequest;
+
     /* parse message request-line */
     std::vector<std::string>::iterator itr = lines.begin();
     for (; itr != lines.end(); ++itr)
@@ -87,7 +95,13 @@ RTSPMessager::create_request(std::string str, RTSPRequest ** request)
         std::string line = *itr;
         if (itr == lines.begin())
         {
-            parse_header(line, *request);
+            if (!parse_header(line, *request))
+            {
+                delete *request;
+                *request = nullptr;
+
+                return false;
+            }
         }
         else if ((pos = line.find(RTSP_FIELD_SEP)) != std::string::npos)
         {
@@ -142,8 +156,20 @@ RTSPMessager::send_response(uint32_t      id,
     XULOG_D("send response: \n%s", response.response.c_str());
 }
 
-void
-RTSPMessager::parse_header(std::string line, RTSPRequest * request)
+std::shared_ptr<IUTETransport>
+RTSPMessager::rtsp_transport(uint32_t id)
+{
+    RTSPMessagerClient::iterator itr = m_clients.find(id);
+    if (itr == m_clients.end())
+    {
+        return nullptr;
+    }
+
+    return itr->second;
+}
+
+bool
+RTSPMessager::parse_header(std::string line, RTSPRequest *request)
 {
     std::string::size_type p, pos;
     std::string method;
@@ -152,13 +178,19 @@ RTSPMessager::parse_header(std::string line, RTSPRequest * request)
     pos     = line.find(RTSP_SEPERATOR, 0);
     method  = line.substr(0, pos != std::string::npos ? pos - 0 : std::string::npos);
 
-    for (std::vector<RTSPMethod>::iterator itr = m_methods.begin(); itr != m_methods.end(); ++itr)
+    std::vector<RTSPMethod>::iterator itr = m_methods.begin();
+    for (; itr != m_methods.end(); ++itr)
     {
         if (itr->name.compare(method) == 0)
         {
             request->method = *itr;
             break;
         }
+    }
+
+    if (itr == m_methods.end())
+    {
+        return false;
     }
 
     /* url */
@@ -170,6 +202,8 @@ RTSPMessager::parse_header(std::string line, RTSPRequest * request)
     p   = pos + std::string(RTSP_SEPERATOR).length();
     pos = line.find(RTSP_SEPERATOR, p);
     request->version = line.substr(p, pos != std::string::npos ? pos - p : std::string::npos);
+
+    return true;
 }
 
 bool 
@@ -208,34 +242,63 @@ RTSPMessager::parse_transport(std::string line, RTSP_Setup * param)
         return false;
     }
 
-    /* client_port=xxx-xxx; */
-    pos = line.find(RTSP_CLIENT_PORT);
-    if (pos == std::string::npos)
+    if (!param->tcp)
     {
-        XULOG_E("no client port in SETUP request.");
-        return false;
-    }
-
-    pos += std::string(RTSP_CLIENT_PORT).length();
-    pos2 = line.find(RTSP_ATTR_SEP, pos);
-
-    attr = line.substr(pos, pos2 != std::string::npos ? pos2 - pos : std::string::npos);
-
-    try
-    {
-        param->port_base = std::stoi(attr, &idx);
-        
-        int rtcp_port = std::stoi(attr.substr(idx + 1));
-        if (rtcp_port != param->port_base + 1)
+        /* client_port=xxx-xxx; */
+        pos = line.find(RTSP_CLIENT_PORT);
+        if (pos == std::string::npos)
         {
-            XULOG_E("invalid client ports -- rtcp.");
+            XULOG_E("no client port in SETUP request.");
+            return false;
+        }
+
+        pos += std::string(RTSP_CLIENT_PORT).length();
+        pos2 = line.find(RTSP_ATTR_SEP, pos);
+
+        attr = line.substr(pos, pos2 != std::string::npos ? pos2 - pos : std::string::npos);
+
+        try
+        {
+            param->port_base = std::stoi(attr, &idx);
+
+            int rtcp_port = std::stoi(attr.substr(idx + 1));
+            if (rtcp_port != param->port_base + 1)
+            {
+                XULOG_E("invalid client ports -- rtcp.");
+                return false;
+            }
+        }
+        catch (const std::invalid_argument &)
+        {
+            XULOG_E("invalid client ports.");
             return false;
         }
     }
-    catch (const std::invalid_argument &)
+    else
     {
-        XULOG_E("invalid client ports.");
-        return false;
+        /* interleaved: */
+        pos = line.find(RTSP_INTERLEAVED);
+        if (pos == std::string::npos)
+        {
+            XULOG_E("no interleaved info in SETUP request(TCP).");
+            return false;
+        }
+
+        pos += std::string(RTSP_INTERLEAVED).length();
+        pos2 = line.find(RTSP_ATTR_SEP, pos);
+
+        attr = line.substr(pos, pos2 != std::string::npos ? pos2 - pos : std::string::npos);
+
+        try
+        {
+            param->interleaved[0] = std::stoi(attr, &idx);
+            param->interleaved[1] = std::stoi(attr.substr(idx + 1));
+        }
+        catch (const std::invalid_argument &)
+        {
+            XULOG_E("invalid interleave values.");
+            return false;
+        }
     }
 
     param->s_port_base = 0;
@@ -272,6 +335,10 @@ RTSPMessager::trim(std::string value)
 void
 RTSPMessager::fill_response(RTSPRequest * request, RTSPResponse * response, void * arg)
 {
+    /* 9.2 An RTSP message MUST contain a 'Content-Length' header whenever
+       that message contains a payload. Otherwise, an RTSP packet is terminated
+       with an empty line immediately following the last message header.
+     */
     if (request->method.method == RTSPMethod::METHOD::RTSP_METHOD_OPTIONS)
     {
         /* 10.1 An OPTIONS request may be issued at any time */
@@ -289,6 +356,7 @@ RTSPMessager::fill_response(RTSPRequest * request, RTSPResponse * response, void
 
         response->response += RTSP_ENDLINE;
 
+        /* no payload */
         response->response += RTSP_ENDLINE;
     }
     else if (request->method.method == RTSPMethod::METHOD::RTSP_METHOD_DESCRIBE)
@@ -302,7 +370,7 @@ RTSPMessager::fill_response(RTSPRequest * request, RTSPResponse * response, void
 
         response->response += RTSP_ENDLINE;
 
-        /* append the sdp */
+        /* payload */
         response->response += body; ///< body
     }
     else if (request->method.method == RTSPMethod::METHOD::RTSP_METHOD_SETUP)
@@ -320,9 +388,9 @@ RTSPMessager::fill_response(RTSPRequest * request, RTSPResponse * response, void
         }
 
         /* The server generates session identifiers in response to SETUP requests.
-           The session identifier is needed to distinguish several delivery
-           requests for the same URL coming from the same client. (zhp: don't know what it means, but it seems everything goes fine without it.)
-         */
+            The session identifier is needed to distinguish several delivery
+            requests for the same URL coming from the same client. (zhp: don't know what it means, but it seems everything goes fine without it.)
+        */
         response->response += std::string("Session: ") + setup->session;
         response->response += std::string(";timeout=") + std::to_string(60); ///< 60s timeout
         response->response += RTSP_ENDLINE;
@@ -332,21 +400,33 @@ RTSPMessager::fill_response(RTSPRequest * request, RTSPResponse * response, void
         response->response += RTSP_ATTR_SEP;
         response->response += (setup->unicast ? RTSP_TRANS_UNICAST : RTSP_TRANS_MULTICAST);
         response->response += RTSP_ATTR_SEP;
-        response->response += RTSP_CLIENT_PORT + std::to_string(setup->port_base) + "-" + std::to_string(setup->port_base + 1);
-        response->response += RTSP_ATTR_SEP;
 
-        /* plus the server port */
-        response->response += RTSP_SERVER_PORT + std::to_string(setup->s_port_base) + "-" + std::to_string(setup->s_port_base + 1);
-        response->response += RTSP_ENDLINE;
+        if (!setup->tcp)
+        {
+            response->response += RTSP_CLIENT_PORT + std::to_string(setup->port_base) + "-" + std::to_string(setup->port_base + 1);
+            response->response += RTSP_ATTR_SEP;
+
+            /* plus the server port */
+            response->response += RTSP_SERVER_PORT + std::to_string(setup->s_port_base) + "-" + std::to_string(setup->s_port_base + 1);
+            response->response += RTSP_ENDLINE;
+        }
+        else
+        {
+            response->response += RTSP_INTERLEAVED + std::to_string(setup->interleaved[0]) + "-" + std::to_string(setup->interleaved[1]);
+            response->response += RTSP_ENDLINE;
+        }
         
+        /* no payload */
         response->response += RTSP_ENDLINE;
     }
     else if (request->method.method == RTSPMethod::METHOD::RTSP_METHOD_PLAY)
     {
+        /* no payload */
         response->response += RTSP_ENDLINE;
     }
     else if (request->method.method == RTSPMethod::METHOD::RTSP_METHOD_TEARDOWN)
     {
+        /* no payload */
         response->response += RTSP_ENDLINE;
     }
 }
@@ -400,7 +480,7 @@ RTSPMessager::check_request(RTSPRequest * request)
 }
 
 uint32_t
-RTSPMessager::get_client(std::shared_ptr<IUTETransport> transport)
+RTSPMessager::get_client_id(std::shared_ptr<IUTETransport> transport)
 {
     std::map<uint32_t, std::shared_ptr<IUTETransport>>::iterator itr = m_clients.begin();
     for (; itr != m_clients.end(); ++itr)
@@ -451,17 +531,30 @@ void
 RTSPMessager::on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len)
 {
     /* RTSP messages from clients */
-    uint32_t clientId = get_client(transport);
+    uint32_t clientId = get_client_id(transport);
     if (!clientId)
     {
         XULOG_E("unknown message from %s:%d", transport->remote_ip(), transport->remote_port());
         return;
     }
 
-    RTSPRequest * request = NULL;
+    RTSPRequest *request = NULL;
     if (!create_request(std::string(data, len), &request))
     {
-        XULOG_E("create request failed for string: %s", data);
+        std::string packet = InterleavedFrame::parse(data, len);
+        if (!packet.empty())
+        {
+            RtcpPacket *rtcp = RtcpPacket::parse(packet);
+            if (rtcp)
+            {
+                m_sink->on_rtcp(clientId, rtcp);
+                delete rtcp;
+
+                return;
+            }
+        }
+
+        //XULOG_E("unkown bytes received(%d): %s", len, data);
         return;
     }
     else

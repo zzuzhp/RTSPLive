@@ -162,6 +162,7 @@
     <ClInclude Include="AACStream.h" />
     <ClInclude Include="AVCStream.h" />
     <ClInclude Include="AVStream.h" />
+    <ClInclude Include="InterleavedFrame.h" />
     <ClInclude Include="RtcpPacket.h" />
     <ClInclude Include="RtpPacket.h" />
     <ClInclude Include="RTSPClient.h" />

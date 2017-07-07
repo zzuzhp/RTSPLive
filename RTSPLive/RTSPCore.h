@@ -44,15 +44,17 @@ private:
     /* Messager callbacks */
     uint32_t on_new_client(std::string ip, uint16_t port);
 
-    void on_rtsp_options(uint32_t clientId, RTSPRequest * request);
+    void on_rtsp_options(uint32_t clientId, RTSPRequest *request);
 
-    void on_rtsp_describe(uint32_t clientId, RTSPRequest * request);
+    void on_rtsp_describe(uint32_t clientId, RTSPRequest *request);
 
-    void on_rtsp_setup(uint32_t clientId, RTSPRequest * request, RTSP_Setup * param);
+    void on_rtsp_setup(uint32_t clientId, RTSPRequest *request, RTSP_Setup *param);
 
-    void on_rtsp_play(uint32_t clientId, RTSPRequest * request, RTSP_Play * param);
+    void on_rtsp_play(uint32_t clientId, RTSPRequest *request, RTSP_Play *param);
 
-    void on_rtsp_teardown(uint32_t clientId, RTSPRequest * request, RTSP_Teardown * param);
+    void on_rtsp_teardown(uint32_t clientId, RTSPRequest *request, RTSP_Teardown *param);
+
+    void on_rtcp(uint32_t id, RtcpPacket *rtcp);
 
     /* client callbacks */
     void on_time_out(RTSPClient * client);

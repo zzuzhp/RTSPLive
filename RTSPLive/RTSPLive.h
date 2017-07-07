@@ -32,13 +32,13 @@
 
 enum RTSP_MEDIA
 {
-    RTSP_MEDIA_NULL = 0,
+    RTSP_MEDIA_NULL  = 0,
 
     RTSP_MEDIA_AUDIO = 1,
-    RTSP_MEDIA_AAC = 2,
+    RTSP_MEDIA_AAC   = 2,
 
     RTSP_MEDIA_VIDEO = 6,
-    RTSP_MEDIA_AVC = 7
+    RTSP_MEDIA_AVC   = 7
 };
 
 enum RTSP_FRAME_TYPE
@@ -50,7 +50,7 @@ enum RTSP_FRAME_TYPE
 
 enum RTSP_AVC_PACK
 {
-    RTSP_AVC_RFC    = 1,
+    RTSP_AVC_RFC    = 1, ///< not supported now
     RTSP_AVC_ANNEXB = 2,
     RTSP_AVC_AVCC_1 = 3,
     RTSP_AVC_AVCC_2 = 4,
