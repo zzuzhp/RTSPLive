@@ -195,7 +195,7 @@ AVCStream::send_packet(const char * data, int len, uint32_t ts, bool marker)
 
         on_rtp_packet(packet);
 
-        delete packet;
+        delete (RtpPacket *)packet;
     }
 }
 
