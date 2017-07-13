@@ -266,6 +266,10 @@ RTSPCore::on_rtsp_play(uint32_t clientId, RTSPRequest * request, RTSP_Play * pla
         return;
     }
 
+    /* first, send the play ok response */
+    m_messager->send_response(clientId, request, "200", "OK", play);
+
+    /* and then, send the media data */
     std::vector<IAVStream *>::iterator itr = m_streams.begin();
     for (; itr != m_streams.end(); ++itr)
     {
@@ -274,8 +278,6 @@ RTSPCore::on_rtsp_play(uint32_t clientId, RTSPRequest * request, RTSP_Play * pla
             client->active_stream(*itr);
         }
     }
-
-    m_messager->send_response(clientId, request, "200", "OK", play);
 }
 
 void

@@ -1,6 +1,16 @@
 #include "RTSPLive/RTSPCore.h"
 #include "XUtil/XUTime.h"
 
+#include <signal.h>
+
+volatile bool wanna_exit = false;
+
+void
+sig_hunter(int signum)
+{
+    wanna_exit = true;
+}
+
 int main()
 {
     IRTSPLive * rtsp = RTSPLiveCreate(8554);
@@ -23,20 +33,22 @@ int main()
     char * data = new char[data_len];
     fread(data, 1, data_len, file);
 
+    /* 'control + c' to exit */
+    signal(SIGINT, sig_hunter);
+
     RTSP_media_frame frame;
     
     frame.frame = data;
-    frame.ts_ms = 0;
     frame.len   = data_len;
     frame.type  = RTSP_FRAME_UNCERTAIN;
 
-    do
+    while (!wanna_exit)
     {
+        frame.ts_ms = XUGetTickCount64();
         rtsp->push_stream(streamId, &frame);
-        frame.ts_ms += 33;
 
         XUSleep(33);
-    } while (1);
+    }
 
     RTSPLiveDestroy(rtsp);
 	return 0;

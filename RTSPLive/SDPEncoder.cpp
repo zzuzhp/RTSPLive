@@ -106,20 +106,14 @@ SDPEncoder::add_media(IAVStream * stream, uint8_t pt)
             std::string sps = param_sets[0];
             std::string pps = param_sets[1];
 
-            char * sps_enc = new char[sps.length() * 2];
-            int sps_enc_len = base64_encode(sps_enc, sps.c_str(), sps.length());
-
-            char * pps_enc = new char[pps.length() * 2];
-            int pps_enc_len = base64_encode(pps_enc, pps.c_str(), pps.length());
+            std::string sps_enc = base64_encode(sps.c_str(), sps.length());
+            std::string pps_enc = base64_encode(pps.c_str(), pps.length());
 
             std::ostringstream profile;
             profile << std::hex << std::uppercase << avc->profile_level_id();
 
-            params += ";profile-level-id=" + profile.str() + ";" +
-                      "sprop-parameter-sets=" + std::string(sps_enc) + "," + std::string(pps_enc);
-
-            delete[] sps_enc;
-            delete[] pps_enc;
+            params += ";profile-level-id=" + profile.str();
+            params += ";sprop-parameter-sets=" + sps_enc + "," + pps_enc;
         }
 
         /* a=fmtp: */
@@ -229,42 +223,39 @@ SDPEncoder::base64_decode(char * bufplain, const char * bufcoded)
     return nbytesdecoded;
 }
 
-int 
-SDPEncoder::base64_encode(char * encoded, const char * string, int len)
+std::string
+SDPEncoder::base64_encode(const char *string, int len)
 {
     int i;
-    char * p;
     static const char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    p = encoded;
+    std::string encoded;
     for (i = 0; i < len - 2; i += 3)
     {
-        *p++ = basis_64[(string[i] >> 2) & 0x3F];
-        *p++ = basis_64[((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
-        *p++ = basis_64[((string[i + 1] & 0xF) << 2) | ((int)(string[i + 2] & 0xC0) >> 6)];
-        *p++ = basis_64[string[i + 2] & 0x3F];
+        encoded += basis_64[(string[i] >> 2) & 0x3F];
+        encoded += basis_64[((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
+        encoded += basis_64[((string[i + 1] & 0xF) << 2) | ((int)(string[i + 2] & 0xC0) >> 6)];
+        encoded += basis_64[string[i + 2] & 0x3F];
     }
 
     if (i < len)
     {
-        *p++ = basis_64[(string[i] >> 2) & 0x3F];
+        encoded += basis_64[(string[i] >> 2) & 0x3F];
         if (i == (len - 1)) 
         {
-            *p++ = basis_64[((string[i] & 0x3) << 4)];
-            *p++ = '=';
+            encoded += basis_64[((string[i] & 0x3) << 4)];
+            encoded += '=';
         }
         else 
         {
-            *p++ = basis_64[((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
-            *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
+            encoded += basis_64[((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
+            encoded += basis_64[((string[i + 1] & 0xF) << 2)];
         }
 
-        *p++ = '=';
+        encoded += '=';
     }
 
-    *p++ = '\0';
-
-    return p - encoded;
+    return encoded;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

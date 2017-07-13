@@ -464,8 +464,10 @@ RTSPMessager::on_recv(std::shared_ptr<IUTETransport> transport, char * data, int
         XULOG_E("create request failed for string: %s", data);
         return;
     }
-
-    XULOG_D("\n\nmethod : %s\nurl    : %s\nversion: %s", request->method.name.c_str(), request->url.c_str(), request->version.c_str());
+    else
+    {
+        XULOG_D("\nmethod : %s\nurl    : %s\nversion: %s", request->method.name.c_str(), request->url.c_str(), request->version.c_str());
+    }
 
     RTSPField::iterator itr = request->fields.begin();
     for (; itr != request->fields.end(); ++itr)

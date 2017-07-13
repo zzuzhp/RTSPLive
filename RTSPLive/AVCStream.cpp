@@ -230,7 +230,7 @@ AVCStream::profile_level_id()
     3) level_idc.
     */
 
-    return (m_sps[1] << 16) | (m_sps[2] << 8) | m_sps[3];
+    return ((unsigned char)m_sps[1] << 16) | ((unsigned char)m_sps[2] << 8) | (unsigned char)m_sps[3];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
