@@ -124,9 +124,9 @@ private:
 private:
 
     /* the input sequence: use double buffer to avoid interleaving call to 'asio::async_write' */
-    asio::streambuf * m_active_request;
-    asio::streambuf * m_pending_request;
-    XUMutex           m_lock;
+    std::shared_ptr<asio::streambuf>    m_active_request;
+    std::shared_ptr<asio::streambuf>    m_pending_request;
+    XUMutex                             m_lock;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

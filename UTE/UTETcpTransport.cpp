@@ -7,14 +7,13 @@ UTETcpTransport::UTETcpTransport(asio::io_service &io) : UTETransport<UTETcpTran
                                                                       asio::ip::tcp::socket,
                                                                       asio::ip::tcp::endpoint>(io, UTE_TRANSPORT_TCP)
 {
-    m_active_request  = new asio::streambuf;
-    m_pending_request = new asio::streambuf;
+    m_active_request  = std::make_shared<asio::streambuf>();
+    m_pending_request = std::make_shared<asio::streambuf>();
 }
 
 UTETcpTransport::~UTETcpTransport()
 {
-    delete m_pending_request;
-    delete m_active_request;
+
 }
 
 const void
