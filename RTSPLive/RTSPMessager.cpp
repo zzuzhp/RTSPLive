@@ -448,7 +448,7 @@ RTSPMessager::on_accept(std::shared_ptr<IUTEAcceptor> acceptor, std::shared_ptr<
 }
 
 void
-RTSPMessager::on_recv(std::shared_ptr<IUTETransport> transport, char * data, int len)
+RTSPMessager::on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len)
 {
     /* RTSP messages from clients */
     uint32_t clientId = get_client(transport);

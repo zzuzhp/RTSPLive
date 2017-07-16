@@ -21,9 +21,9 @@ public:
 
 protected:
 
-    UTEService(asio::io_service & io) : m_f_error(nullptr),
-                                        m_service(io),
-                                        m_strand(io)
+    UTEService(asio::io_service &io) : m_f_error(nullptr),
+                                       m_service(io),
+                                       m_strand(io)
     {
 
     }

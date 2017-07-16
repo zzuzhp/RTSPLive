@@ -3,9 +3,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
 
-UTEUdpTransport::UTEUdpTransport(asio::io_service & io) : UTETransport<UTEUdpTransport,
-                                                          asio::ip::udp::socket,
-                                                          asio::ip::udp::endpoint>(io, UTE_TRANSPORT_UDP)
+UTEUdpTransport::UTEUdpTransport(asio::io_service &io) : UTETransport<UTEUdpTransport,
+                                                         asio::ip::udp::socket,
+                                                         asio::ip::udp::endpoint>(io, UTE_TRANSPORT_UDP)
 {
 
 }
@@ -46,7 +46,7 @@ UTEUdpTransport::open(std::string   remote_ip,
 }
 
 void 
-UTEUdpTransport::on_resolve(const asio::error_code & err, asio::ip::udp::resolver::iterator itr)
+UTEUdpTransport::on_resolve(const asio::error_code &ec, asio::ip::udp::resolver::iterator itr)
 {
     /* If the initiating socket is not connection-mode, then connect() sets the socket's peer address, 
        but no connection is made. For SOCK_DGRAM sockets, the peer address identifies where all datagrams 
@@ -58,7 +58,7 @@ UTEUdpTransport::on_resolve(const asio::error_code & err, asio::ip::udp::resolve
 }
 
 void 
-UTEUdpTransport::on_connect(const asio::error_code & err)
+UTEUdpTransport::on_connect(const asio::error_code &ec)
 {
     m_socket->set_option(asio::socket_base::reuse_address(true));
 

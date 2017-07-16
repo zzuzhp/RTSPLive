@@ -12,7 +12,7 @@ class UTEModule : public UTEService,
 {
 public:
 
-    static std::shared_ptr<module> create_instance(asio::io_service & io)
+    static std::shared_ptr<module> create_instance(asio::io_service &io)
     {
         return std::shared_ptr<module>(new module(io))->shared_from_this();
     }
@@ -21,21 +21,21 @@ public:
 
 protected:
 
-    UTEModule(asio::io_service & io) : UTEService(io) {};
+    UTEModule(asio::io_service &io) : UTEService(io) {};
 };
 
 #define UTE_BASE(module) \
 public: \
     virtual ~module(){} \
 protected: \
-    module(asio::io_service & io) : UTEModule(io){}
+    module(asio::io_service &io) : UTEModule(io){}
 
 #define UTE_OBJECT(module) \
     friend class UTEModule<module>; \
 public: \
     virtual ~module(); \
 protected: \
-    module(asio::io_service & io);
+    module(asio::io_service &io);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////

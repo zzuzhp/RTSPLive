@@ -23,26 +23,31 @@ public:
             size = 64 * 1024;
         }
 
-        m_buffer_size = size;
-        m_socket->async_receive_from(m_response.prepare(size),
+        m_socket->async_receive_from(m_read_buf.prepare(size),
                                      m_remote_endpoint,
-                                     m_strand.wrap(UTE_CALLBACK_2(&UTEUdpTransport::on_read, shared_from_this())));
+                                     m_strand.wrap(UTE_CALLBACK_2(&UTEUdpTransport::on_read, shared_from_this(), true)));
     }
 
-    void write(const char * data, size_t size)
+    void write(const char *data, size_t size)
     {
-        std::ostream stream(&m_request);
-        stream.write(data, size);
+        auto buffer = std::make_shared<std::string>(data, size);
 
-        m_socket->async_send(m_request.data(), m_strand.wrap(UTE_CALLBACK_2(&UTEUdpTransport::on_write, shared_from_this())));
-        m_request.consume(m_request.size());
+        m_socket->async_send(asio::buffer(*buffer),
+                             m_strand.wrap(UTE_CALLBACK_2(&UTEUdpTransport::on_write, shared_from_this(), buffer)));
+    }
+
+protected:
+
+    virtual void on_write(const asio::error_code &ec, size_t bytes_transferred, std::shared_ptr<std::string>)
+    {
+        __super::on_write(ec, bytes_transferred);
     }
 
 private:
 
-    void on_connect(const asio::error_code & err);
+    void on_connect(const asio::error_code &ec);
     
-    void on_resolve(const asio::error_code & err, asio::ip::udp::resolver::iterator itr);
+    void on_resolve(const asio::error_code &ec, asio::ip::udp::resolver::iterator itr);
 
 private:
 

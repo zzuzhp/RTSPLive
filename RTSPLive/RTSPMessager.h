@@ -138,7 +138,7 @@ private:
     /* UTE callback */
     void on_accept(std::shared_ptr<IUTEAcceptor> acceptor, std::shared_ptr<IUTETransport> transport);
 
-    void on_recv(std::shared_ptr<IUTETransport> transport, char * data, int len);
+    void on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len);
 
     void on_send(std::shared_ptr<IUTETransport> transport, int len) { XULOG_D("RTSPMessager send %d bytes.", len); }
 

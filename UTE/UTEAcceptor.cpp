@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
 
-UTEAcceptor::UTEAcceptor(asio::io_service & io) : UTEModule(io),
-                                                  m_accept(nullptr)
+UTEAcceptor::UTEAcceptor(asio::io_service &io) : UTEModule(io),
+                                                 m_accept(nullptr)
 {
 
 }
@@ -39,10 +39,10 @@ UTEAcceptor::listen()
     UTE_TTransport transport = UTETcpTransport::create_instance(m_service);
 
     m_acceptor->async_accept(*transport->m_socket,
-                             m_strand.wrap(std::bind(&UTEAcceptor::on_accept,
-                                                     shared_from_this(),
-                                                     transport,
-                                                     std::placeholders::_1)));
+                              m_strand.wrap(std::bind(&UTEAcceptor::on_accept,
+                                                      shared_from_this(),
+                                                      transport,
+                                                      std::placeholders::_1)));
 }
 
 void
@@ -50,24 +50,16 @@ UTEAcceptor::cancel()
 {
     if (m_acceptor)
     {
-        asio::error_code err;
-        m_acceptor->cancel(err);
+        asio::error_code ec;
+        m_acceptor->cancel(ec);
 
-        m_acceptor->close(err);
-
-        //check_error(err, 0);
+        m_acceptor->close(ec);
     }
 }
 
 void
-UTEAcceptor::on_accept(UTE_TTransport transport, const asio::error_code & err)
+UTEAcceptor::on_accept(UTE_TTransport transport, const asio::error_code &ec)
 {
-#if 0
-    if (!check_error(err, 0))
-    {
-        return;
-    }
-#endif
     transport->m_local_endpoint  = transport->m_socket->local_endpoint();
     transport->m_remote_endpoint = transport->m_socket->remote_endpoint();
 

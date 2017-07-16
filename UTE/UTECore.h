@@ -18,15 +18,15 @@ public:
 
     ~UTECore();
 
-    std::shared_ptr<IUTEAcceptor> create_acceptor(IUTEAcceptorObserver * observer);
+    std::shared_ptr<IUTEAcceptor> create_acceptor(IUTEAcceptorObserver *observer);
 
-    std::shared_ptr<IUTEConnector> create_connector(IUTEConnectorObserver * observer);
+    std::shared_ptr<IUTEConnector> create_connector(IUTEConnectorObserver *observer);
 
-    std::shared_ptr<IUTETransport> create_transport(IUTETransportObserver * observer,
-                                                    std::string             remote_ip,
-                                                    uint16_t                remote_port,
-                                                    std::string             local_ip,
-                                                    uint16_t                local_port);
+    std::shared_ptr<IUTETransport> create_transport(IUTETransportObserver *observer,
+                                                    std::string            remote_ip,
+                                                    uint16_t               remote_port,
+                                                    std::string            local_ip,
+                                                    uint16_t               local_port);
 
     bool start();
 

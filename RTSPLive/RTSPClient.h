@@ -58,7 +58,7 @@ private:
     void on_packet(IAVStream * stream, IRtpPacket * packet);
 
     /* ute transport callbacks */
-    void on_recv(std::shared_ptr<IUTETransport> transport, char * data, int len) {/*XULOG_E("RTSPClient should not receve any data: %s", data);*/}
+    void on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len) {/*XULOG_E("RTSPClient should not receve any data: %s", data);*/}
 
     void on_send(std::shared_ptr<IUTETransport> transport, int len) { /*XULOG_D("send %d bytes.", len);*/ }
 

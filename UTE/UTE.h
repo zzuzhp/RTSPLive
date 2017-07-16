@@ -79,7 +79,7 @@ class IUTETransportObserver
 {
 public:
 
-    virtual void on_recv(std::shared_ptr<IUTETransport> transport, char * data, int len) = 0;
+    virtual void on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len) = 0;
 
     virtual void on_send(std::shared_ptr<IUTETransport> transport, int len) = 0;
 

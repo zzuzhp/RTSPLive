@@ -33,7 +33,6 @@ private:
 private:
 
     ASIO_Acceptor      m_acceptor;
-
     UTE_F_Tcp_Accept   m_accept;
 };
 
