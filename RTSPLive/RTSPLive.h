@@ -17,7 +17,7 @@
 #if (defined WIN32 || defined _WIN32) && defined RTSPLIVE_EXPORTS
 #define RTSPLIVE_DLLEXPORTS __declspec(dllexport)
 #else
-#define RTSPLIVE_DLLEXPORTS __declspec(dllimport)
+#define RTSPLIVE_DLLEXPORTS
 #endif
 
 #if defined WIN32 || defined _WIN32
@@ -84,10 +84,11 @@ public:
     virtual uint32_t add_stream(RTSP_MEDIA type, void * init_param) = 0;
 
     virtual void push_stream(uint32_t stream, RTSP_media_frame * frame) = 0;
-
+#if 0
     virtual bool start() = 0;
 
     virtual void stop() = 0;
+#endif
 };
 
 RTSPLIVEAPI(IRTSPLive *)

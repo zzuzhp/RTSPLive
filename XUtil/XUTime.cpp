@@ -5,7 +5,7 @@
 #pragma warning(disable : 4786)
 #endif
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <windows.h>
 #include <mmsystem.h>
 #endif
@@ -14,9 +14,7 @@
 #include <string>
 
 #if defined(_MSC_VER)
-#if defined(_WIN32_WCE)
-#pragma comment(lib, "mmtimer.lib")
-#elif defined(WIN32)
+#if defined(_WIN32)
 #pragma comment(lib, "winmm.lib")
 #endif
 #endif
@@ -24,7 +22,7 @@
 /////////////////////////////////////////////////////////////////////////////
 ////
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 static unsigned long    g_s_tlsKey0 = (unsigned long)-1;
 static unsigned long    g_s_tlsKey1 = (unsigned long)-1;
 #endif
@@ -36,7 +34,7 @@ static XUMutex          g_s_lock;
 int64_t
 XUGetTickCount64()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
     
     const uint32_t tick = ::timeGetTime();
     
@@ -117,7 +115,7 @@ XUGetTickCount64()
 void
 XUSleep(unsigned long milliseconds)
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
     ::Sleep(milliseconds);
 #else
     usleep(milliseconds * 1000);
@@ -127,7 +125,7 @@ XUSleep(unsigned long milliseconds)
 void
 XUGetTimeText(std::string &text)
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
     SYSTEMTIME st;
     ::GetLocalTime(&st);
 

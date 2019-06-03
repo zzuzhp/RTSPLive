@@ -3,7 +3,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
-
 RTSPCore::RTSPCore() : m_ute(nullptr),
                        m_messager(nullptr),
                        m_sdpenc(nullptr),
@@ -26,14 +25,14 @@ RTSPCore::build(uint16_t listen_port)
     {
         XUMutexGuard mon(m_lock);
 
-        m_ute = UTECreate();
-        if (!m_ute)
+        m_sdpenc = new SDPEncoder();
+        if (!m_sdpenc)
         {
             goto fail;
         }
 
-        m_sdpenc = new SDPEncoder();
-        if (!m_sdpenc)
+        m_ute = UTECreate();
+        if (!m_ute || !m_ute->start())
         {
             goto fail;
         }
@@ -62,7 +61,7 @@ RTSPCore::tear()
 {
     XUMutexGuard mon(m_lock);
 
-    stop();
+    //stop();
 
     if (m_ute)
     {
@@ -83,6 +82,7 @@ RTSPCore::tear()
     }
 }
 
+#if 0
 bool 
 RTSPCore::start()
 {
@@ -107,6 +107,7 @@ RTSPCore::stop()
     XUMutexGuard mon(m_lock);
     m_ute->stop();
 }
+#endif
 
 uint32_t 
 RTSPCore::add_stream(RTSP_MEDIA type, void *init_param)
@@ -340,3 +341,4 @@ RTSPCore::on_time_out(RTSPClient * client)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
+

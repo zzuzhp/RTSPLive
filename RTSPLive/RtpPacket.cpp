@@ -1,6 +1,7 @@
 #include "RtpPacket.h"
 
 #include <windows.h>
+#include <WinSock2.h>
 #include <new>
 
 #define MAX_PAYLOAD_BYTES (1024 * 63)

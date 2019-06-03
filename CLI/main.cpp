@@ -13,8 +13,8 @@ sig_hunter(int signum)
 
 int main()
 {
-    IRTSPLive * rtsp = RTSPLiveCreate(8554);
-    rtsp->start();
+    IRTSPLive * rtsp = RTSPLiveCreate(6990);
+    //rtsp->start();
 
     RTSP_avc_init_param init;
     init.pack       = RTSP_AVC_ANNEXB;

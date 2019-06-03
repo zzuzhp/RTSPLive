@@ -7,7 +7,7 @@
 #pragma warning(disable : 4786)
 #endif
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -100,7 +100,7 @@ XUFunctorCommandTask::stop()
 void
 XUFunctorCommandTask::stopMe()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
     const unsigned long threadId = ::GetCurrentThreadId();
 #else
     const unsigned long threadId = (unsigned long)pthread_self();
@@ -199,7 +199,7 @@ XUFunctorCommandTask::threadIds() const
 void
 XUFunctorCommandTask::svc()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
     const unsigned long threadId = ::GetCurrentThreadId();
 #else
     const unsigned long threadId = (unsigned long)pthread_self();

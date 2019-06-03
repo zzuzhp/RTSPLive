@@ -1,7 +1,7 @@
 #include "XURefCount.h"
 #include "XUMutex.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -11,7 +11,7 @@
 unsigned long
 XURefCount::addRef()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
     const unsigned long refCount = ::InterlockedIncrement((long*)&m_refCount);
 #else
     m_lock.lock();
@@ -25,7 +25,7 @@ XURefCount::addRef()
 unsigned long
 XURefCount::release()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
     const unsigned long refCount = ::InterlockedDecrement((long*)&m_refCount);
 #else
     m_lock.lock();

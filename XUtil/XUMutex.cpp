@@ -1,6 +1,6 @@
 #include "XUMutex.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <windows.h>
 #else
 #include <pthread.h>
@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 ////
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
 
 class XUMutexImpl
 {
@@ -261,7 +261,7 @@ XURecursiveMutex::~XURecursiveMutex()
 void
 XURecursiveMutex::lock()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
     const unsigned long threadId = ::GetCurrentThreadId();
 #else
     const unsigned long threadId = (unsigned long)pthread_self();
@@ -285,7 +285,7 @@ XURecursiveMutex::lock()
 void
 XURecursiveMutex::unlock()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32) 
     const unsigned long threadId = ::GetCurrentThreadId();
 #else
     const unsigned long threadId = (unsigned long)pthread_self();

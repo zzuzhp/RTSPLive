@@ -55,7 +55,16 @@ UTECore::create_transport(IUTETransportObserver * observer,
 bool
 UTECore::start()
 {
-    return spawn();
+    XUMutexCondition cond;
+    m_service->dispatch(UTE_CALLBACK_0(&UTECore::on_service_started, this, &cond));
+
+    if (!spawn())
+    {
+        return false;
+    }
+
+    cond.wait(nullptr);
+    return true;
 }
 
 void
@@ -82,5 +91,10 @@ UTECore::svc()
     m_service->run();
 }
 
+void
+UTECore::on_service_started(XUMutexCondition *cond)
+{
+    cond->signal();
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////

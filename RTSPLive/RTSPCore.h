@@ -24,11 +24,11 @@ public:
     bool build(uint16_t listen_port);
 
     void tear();
-
+#if 0
     bool start();
 
     void stop();
-
+#endif
     uint32_t add_stream(RTSP_MEDIA type, void * init_param);
 
     void push_stream(uint32_t stream, RTSP_media_frame * frame);

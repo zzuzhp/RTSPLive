@@ -67,7 +67,7 @@ RTSPRenderer::RTSPRenderer(TCHAR *name, LPUNKNOWN punk, HRESULT *phr) : CBaseRen
     m_avc_param = new RTSP_avc_init_param;
     memset(m_avc_param, 0, sizeof(RTSP_avc_init_param));
 
-    m_rtsp = RTSPLiveCreate(8554);
+    m_rtsp = RTSPLiveCreate(6990);
 }
 
 RTSPRenderer::~RTSPRenderer()
@@ -177,7 +177,7 @@ RTSPRenderer::OnStartStreaming()
     }
 
     m_stream = m_rtsp->add_stream(RTSP_MEDIA_AVC, m_avc_param);
-    m_rtsp->start();
+    //m_rtsp->start();
 
     return S_OK;
 }
@@ -190,7 +190,7 @@ RTSPRenderer::OnStopStreaming()
         return E_FAIL;
     }
 
-    m_rtsp->stop();
+    //m_rtsp->stop();
 
     return S_OK;
 }

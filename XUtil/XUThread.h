@@ -28,9 +28,7 @@ protected:
     
 private:
     
-#if defined(_WIN32_WCE)
-    static unsigned long __stdcall svcRun(void * arg);
-#elif defined(WIN32)
+#if defined(_WIN32)
     static unsigned int __stdcall svcRun(void * arg);
 #else
     static void * svcRun(void * arg);

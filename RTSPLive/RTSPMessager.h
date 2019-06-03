@@ -92,7 +92,6 @@ struct RTSPResponse
 class IRTSPMessagerSink
 {
 public:
-
     virtual uint32_t on_new_client(std::string ip, uint16_t port) = 0;
 
     virtual void on_rtsp_options(uint32_t id, RTSPRequest * request) = 0;

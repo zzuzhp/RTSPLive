@@ -38,6 +38,8 @@ private:
 
     void svc();
 
+    void on_service_started(XUMutexCondition *cond);
+
 private:
 
     ASIO_Service           m_service;

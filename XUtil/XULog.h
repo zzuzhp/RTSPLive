@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iomanip>
 
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 #include <windows.h>
 #include <iostream>
 #elif defined(ANDROID)

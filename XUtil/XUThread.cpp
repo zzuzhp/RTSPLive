@@ -6,9 +6,7 @@
 #pragma warning(disable : 4786)
 #endif
 
-#if defined(_WIN32_WCE)
-#include <windows.h>
-#elif defined(WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 #include <process.h>
 #include <time.h>
@@ -21,8 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 ////
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-
+#if defined(_WIN32)
 #if !defined(STACK_SIZE_PARAM_IS_A_RESERVATION)
 #define STACK_SIZE_PARAM_IS_A_RESERVATION 0x00010000
 #endif
@@ -58,24 +55,7 @@ XUThreadBase::spawn(bool realtime)
     {
         XUMutexGuard mon(m_lock);
         
-#if defined(_WIN32_WCE)
-        
-        const HANDLE threadHandle = ::CreateThread(NULL, PRO_TASK_STACK_SIZE,
-            &XUThreadBase::svcRun, this, CREATE_SUSPENDED | STACK_SIZE_PARAM_IS_A_RESERVATION, NULL);
-        if (threadHandle == NULL)
-        {
-            return false;
-        }
-        
-        if (realtime)
-        {
-            ::SetThreadPriority(threadHandle, THREAD_PRIORITY_TIME_CRITICAL);
-        }
-        
-        ::ResumeThread(threadHandle);
-        ::CloseHandle(threadHandle);
-        
-#elif defined(WIN32)
+#if defined(_WIN32)
         
         const HANDLE threadHandle = (HANDLE)::_beginthreadex(NULL, PRO_TASK_STACK_SIZE,
             &XUThreadBase::svcRun, this, CREATE_SUSPENDED | STACK_SIZE_PARAM_IS_A_RESERVATION, NULL);
@@ -129,11 +109,7 @@ XUThreadBase::wait()
     }
 }
 
-#if defined(_WIN32_WCE)
-unsigned long
-__stdcall
-XUThreadBase::svcRun(void * arg)
-#elif defined(WIN32)
+#if defined(_WIN32)
 unsigned int
 __stdcall
 XUThreadBase::svcRun(void * arg)
@@ -150,7 +126,7 @@ svcRun::svcRun(void * arg)
     
     srand((unsigned int)time(NULL)); //// !!!
     
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 
 #else
     const pthread_t threadId = pthread_self();
@@ -164,7 +140,7 @@ svcRun::svcRun(void * arg)
     
     thread->svc();
     
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
 
 #endif
     
@@ -175,7 +151,7 @@ svcRun::svcRun(void * arg)
         thread->m_cond.signal();
     }
     
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
     return 0;
 #else
     pthread_detach(threadId);
