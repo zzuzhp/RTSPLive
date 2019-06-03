@@ -60,7 +60,8 @@ I only configured the debug(x86) solution, nothing else is tested...
 
 RTSPRenderer.dll is a dshow render filter, to build it you need to:
 
-1.   build dshow baseclasses(which is incorporated in the windows SDK).
+1.   build dshow baseclasses(which is incorporated in the windows SDK).(note: on win10 no dshow header files are provided on 
+     the windows 10 sdk, you need to install win7 sdk to get them)
 
 2.   specify the include and library path to dshow for project 'RTSPRenderer'.
 
@@ -71,7 +72,7 @@ RTSPRenderer.dll is a dshow render filter, to build it you need to:
 5.   run the graph, and now the server is streaming the file.
 
 RTSPRenderer is the only project that depends on the OS(windows), because it is a dshow filter :), other projects
-should be OS independent.
+should be OS independent.(you may need to install an additional filter 'mcmp4demux.ax' to demux a mp4 file)
 
 UTE is the only project that has dependency on other open-source project(ASIO), which has already been included
 in the solution(no need to download ASIO).
