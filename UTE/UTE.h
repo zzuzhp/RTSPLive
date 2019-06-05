@@ -16,13 +16,21 @@
 #endif
 #endif
 
-#if (defined WIN32 || defined _WIN32) && defined UTE_EXPORTS
-#define UTE_DLLEXPORTS __declspec(dllexport)
+#if defined(_WIN32)
+    #if defined UTE_EXPORTS
+        #define UTE_DLLEXPORTS __declspec(dllexport)
+    #else
+        #define UTE_DLLEXPORTS
+    #endif
 #else
-#define UTE_DLLEXPORTS __declspec(dllimport)
+    #if defined UTE_EXPORTS
+        #define UTE_DLLEXPORTS __attribute__ ((visibility ("default")))
+    #else
+        #define UTE_DLLEXPORTS
+    #endif
 #endif
 
-#if defined WIN32 || defined _WIN32
+#if defined(_WIN32)
 #define UTE_CDECL   __cdecl
 #else
 #define UTE_CDECL
@@ -78,7 +86,6 @@ public:
 class IUTETransportObserver
 {
 public:
-
     virtual void on_recv(std::shared_ptr<IUTETransport> transport, const char * data, int len) = 0;
 
     virtual void on_send(std::shared_ptr<IUTETransport> transport, int len) = 0;
@@ -89,7 +96,6 @@ public:
 class IUTETransport
 {
 public:
-
     virtual const UTE_TRANSPORT_TYPE type() = 0;
 
     virtual const void set_observer(IUTETransportObserver * observer) = 0;
@@ -108,6 +114,7 @@ public:
 class IUTE
 {
 public:
+    virtual ~IUTE() {}
 
     /* tcp */
     virtual std::shared_ptr<IUTEAcceptor> create_acceptor(IUTEAcceptorObserver * observer) = 0;

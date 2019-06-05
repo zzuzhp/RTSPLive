@@ -80,6 +80,7 @@ struct RTSP_media_frame
 class IRTSPLive
 {
 public:
+    virtual ~IRTSPLive() {}
 
     virtual uint32_t add_stream(RTSP_MEDIA type, void * init_param) = 0;
 
