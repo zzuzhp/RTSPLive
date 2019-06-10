@@ -40,7 +40,7 @@ protected:
 
     virtual void on_write(const asio::error_code &ec, size_t bytes_transferred, std::shared_ptr<std::string>)
     {
-        __super::on_write(ec, bytes_transferred);
+        UTETransport<UTEUdpTransport, asio::ip::udp::socket, asio::ip::udp::endpoint>::on_write(ec, bytes_transferred);
     }
 
 private:

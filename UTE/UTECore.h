@@ -13,7 +13,6 @@ class UTECore : public IUTE,
                 public XUThreadBase
 {
 public:
-
     UTECore();
 
     ~UTECore();

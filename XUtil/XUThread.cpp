@@ -14,6 +14,7 @@
 #include <pthread.h>
 #endif
 
+#include <cstdlib>
 #include <vector>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -115,7 +116,7 @@ __stdcall
 XUThreadBase::svcRun(void * arg)
 #else
 void *
-svcRun::svcRun(void * arg)
+XUThreadBase::svcRun(void * arg)
 #endif
 {
     XUThreadBase * const thread = (XUThreadBase *)arg;

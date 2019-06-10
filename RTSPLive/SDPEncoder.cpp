@@ -71,7 +71,7 @@ SDPEncoder::add_media(IAVStream * stream, uint8_t pt)
 
         add_line(m);
     }
-    
+
     /* a=control
         C.1.1 Control URL 
         This attribute may contain either relative and absolute URLs,
@@ -90,7 +90,7 @@ SDPEncoder::add_media(IAVStream * stream, uint8_t pt)
     /* a=rtpmap: */
     std::vector<std::string> a;
     a.push_back("a=rtpmap:" + std::to_string(pt));
-    
+
     if (stream->media_type() == RTSP_MEDIA_AVC)
     {
         AVCStream * avc = (AVCStream *)stream;

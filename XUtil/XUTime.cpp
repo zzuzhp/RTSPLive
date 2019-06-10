@@ -1,5 +1,4 @@
 #include "XUTime.h"
-#include "XUMutex.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4786)
@@ -7,10 +6,12 @@
 
 #if defined(_WIN32)
 #include <windows.h>
-#include <mmsystem.h>
+#include <time.h>
+#else /// _WIN32
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 #endif
-
-#include <cassert>
 #include <string>
 
 #if defined(_MSC_VER)
@@ -21,181 +22,128 @@
 
 /////////////////////////////////////////////////////////////////////////////
 ////
+struct JJTimeSpec
+{
+    time_t  tv_sec;     /** seconds **/
+    long    tv_nsec;    /** and nanoseconds **/
+};
+
+static JJTimeSpec getPrivTime()
+{
+    /** return time since midnight (0 hour), January 1, 1970 **/
+    struct JJTimeSpec time = {0, 0};
 
 #if defined(_WIN32)
-static unsigned long    g_s_tlsKey0 = (unsigned long)-1;
-static unsigned long    g_s_tlsKey1 = (unsigned long)-1;
-#endif
-static XUMutex          g_s_lock;
+    uint64_t intervals;
+    FILETIME ft;
 
-/////////////////////////////////////////////////////////////////////////////
-////
+    GetSystemTimeAsFileTime(&ft);
+
+    /**
+     * A file time is a 64-bit value that represents the number
+     * of 100-nanosecond intervals that have elapsed since
+     * January 1, 1601 12:00 A.M. UTC.
+     *
+     * Between January 1, 1970 (Epoch) and January 1, 1601 there were
+     * 134744 days,
+     * 11644473600 seconds or
+     * 11644473600,000,000,0 100-nanosecond intervals.
+     */
+    intervals = ((uint64_t) ft.dwHighDateTime << 32) | ft.dwLowDateTime;
+    intervals -= 116444736000000000;
+
+    time.tv_sec  = (long)(intervals / 10000000);
+    time.tv_nsec = ((long)((intervals % 10000000) / 10)) * 1000;
+#elif defined (CLOCK_REALTIME) && defined (PREFER_CLOCK_REALTIME)
+    {
+        struct timespec ts;
+        clock_gettime (CLOCK_REALTIME, &ts);
+
+        time.tv_sec  = ts.tv_sec;
+        time.tv_nsec = ts.tv_nsec;
+    }
+#else
+    {
+        struct timeval tv;
+        gettimeofday (&tv, NULL);
+
+        time.tv_sec  = tv.tv_sec;
+        time.tv_nsec = tv.tv_usec * 1000;
+    }
+#endif
+    return time;
+}
 
 int64_t
 XUGetTickCount64()
 {
-#if defined(_WIN32) 
-    
-    const uint32_t tick = ::timeGetTime();
-    
-    if (g_s_tlsKey0 == (unsigned long)-1)
-    {
-        g_s_lock.lock();
-        
-        if (g_s_tlsKey0 == (unsigned long)-1) //// double check
-        {
-            g_s_tlsKey0 = ::TlsAlloc(); //// dynamic TLS!!!
-        }
-        
-        g_s_lock.unlock();
-    }
-    
-    if (g_s_tlsKey1 == (unsigned long)-1)
-    {
-        g_s_lock.lock();
-        
-        if (g_s_tlsKey1 == (unsigned long)-1) //// double check
-        {
-            g_s_tlsKey1 = ::TlsAlloc(); //// dynamic TLS!!!
-        }
-        
-        g_s_lock.unlock();
-    }
-    
-    uint32_t oldTick0 = (uint32_t)::TlsGetValue(g_s_tlsKey0);
-    uint32_t oldTick1 = (uint32_t)::TlsGetValue(g_s_tlsKey1);
-    
-    if (tick > oldTick0)
-    {
-        oldTick0 = tick;
-        ::TlsSetValue(g_s_tlsKey0, (void*)oldTick0);
-    }
-    else if (tick < oldTick0)
-    {
-        oldTick0 = tick;
-        ++oldTick1;
-        ::TlsSetValue(g_s_tlsKey0, (void*)oldTick0);
-        ::TlsSetValue(g_s_tlsKey1, (void*)oldTick1);
-    }
-    else
-    {
-    }
-    
-    int64_t ret = oldTick1;
-    ret <<= 32;
-    ret |= oldTick0;
-    
-    return ret;
-    
-#elif defined(XU_LACKS_CLOCK_GETTIME) //// for MacOS!!!
-    
-    struct timespec tick;
-    clock_gettime(CLOCK_MONOTONIC, &tick);
-    
-    int64_t ret = tick.tv_sec;
-    ret *= 1000;
-    ret += tick.tv_nsec / 1000000;
-    
-    return ret;
-    
-#else
-    
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    
-    int64_t ret = tv.tv_sec;
-    ret *= 1000;
-    ret += tv.tv_usec / 1000;
-    
-    return ret;
-    
-#endif
+    /** return time in milliseconds **/
+    JJTimeSpec time = getPrivTime();
+    return time.tv_sec * 1000 + time.tv_nsec / 1000000;
 }
 
 void
 XUSleep(unsigned long milliseconds)
 {
-#if defined(_WIN32) 
-    ::Sleep(milliseconds);
+    const int64_t te = XUGetTickCount64() + milliseconds;
+
+    while(1)
+    {
+#if defined(_WIN32)
+        ::Sleep(1);
 #else
-    usleep(milliseconds * 1000);
+        usleep(500);
 #endif
+
+        if (XUGetTickCount64() >= te)
+        {
+            break;
+        }
+    }
 }
 
 void
 XUGetTimeText(std::string &text)
 {
-#if defined(_WIN32)
-    SYSTEMTIME st;
-    ::GetLocalTime(&st);
+    /** return the formatted time string **/
+    JJTimeSpec time = getPrivTime();
 
-    char timeText[256] = "";
-    sprintf_s(timeText,
-              "%04d.%02d.%02d --- %02d:%02d:%02d",
-              (int)st.wYear,
-              (int)st.wMonth,
-              (int)st.wDay,
-              (int)st.wHour,
-              (int)st.wMinute,
-              (int)st.wSecond);
+    time_t curtime = time.tv_sec;
+    struct tm *timeinfo = localtime(&curtime);
 
-#else //// WIN32, _WIN32_WCE
+    char time_string[64] = {0};
+    sprintf(time_string, "%.2d-%.2d %.2d:%.2d:%.2d:%03d",
+            timeinfo->tm_mon + 1,
+            timeinfo->tm_mday,
+            timeinfo->tm_hour,
+            timeinfo->tm_min,
+            timeinfo->tm_sec,
+            (int)(time.tv_nsec / 1000000));
 
-    struct tm theTm;
-    memset(&theTm, 0, sizeof(struct tm));
-
-    const time_t     theTime = time(NULL);
-    struct tm* const theTm2 = localtime(&theTime);
-    if (theTm2 != NULL)
-    {
-        theTm = *theTm2;
-        theTm.tm_year += 1900;
-        theTm.tm_mon += 1;
-    }
-
-    char timeText[256] = "";
-    sprintf(timeText,
-            "%04d.%02d.%02d --- %02d:%02d:%02d",
-            (int)theTm.tm_year,
-            (int)theTm.tm_mon,
-            (int)theTm.tm_mday,
-            (int)theTm.tm_hour,
-            (int)theTm.tm_min,
-            (int)theTm.tm_sec);
-#endif //// WIN32, _WIN32_WCE
-
-    text = timeText;
+    text = time_string;
 }
 
 uint64_t
 XUNTPTime()
 {
-    /* system time as 100ns since Jan 1, 1601 */
-    FILETIME ft;
-    ULARGE_INTEGER li;
+    JJTimeSpec time = getPrivTime();
 
-    GetSystemTimeAsFileTime(&ft);
-    
-    li.HighPart = ft.dwHighDateTime;
-    li.LowPart  = ft.dwLowDateTime;
+    /** convert nanoseconds to 32-bits fraction (232 picosecond units) **/
+    uint64_t t = (uint64_t)(time.tv_nsec) << 32;
+    t /= 1000000000;
 
-    double dNTP = double(li.QuadPart) / (1000 * 10000); ///< convert to seconds as double
-
-    /* 1601 to 1900 is 299*365 days, plus 72 leap years (299/4 minus 1700, 1800) */
-    const int64_t DAYS_FROM_FILETIME_TO_NTP = 109207;
-    int64_t offsetSeconds = DAYS_FROM_FILETIME_TO_NTP * 24 * 60 * 60;
-    dNTP -= offsetSeconds;
-
-    double fp = (dNTP * (1LL << 32)); ///< return as 64-bit 32.32 fixed point
-
-    /* simple cast of ULONGLONG ntp = static_cast<ULONGLONG>(fp) fails on Visual Studio if
-       the value is greater than INT64_MAX. So half the value before casting.
+    /** There is 70 years (incl. 17 leap ones) offset to the Unix Epoch.
+     *  No leap seconds during that period since they were not invented yet.
      */
-    uint64_t ntp = (uint64_t)(fp / 2);
-    ntp += ntp;
+    ///< assert (t < 0x100000000);
+    t |= ((70LL * 365 + 17) * 24 * 60 * 60 + time.tv_sec) << 32;
 
-    return ntp;
+    /** same as below:
+     *  uint64_t msw = time.tv_sec + 0x83AA7E80; ///< 0x83AA7E80 is the number of seconds from 1900 to 1970
+     *  uint64_t lsw = (uint32_t)((double)time.tv_nsec * (double)(((uint64_t)1) << 32) * 1.0e-9);
+     *  t = msw << 32 | lsw;
+     */
+    return t;
 }
-
 /////////////////////////////////////////////////////////////////////////////
 ////

@@ -4,7 +4,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
-
 AVCStream * 
 AVCStream::create_instance(uint32_t id, RTSP_avc_init_param *init_param)
 {
@@ -153,7 +152,7 @@ AVCStream::send_nalu(const char * nalu, int len, uint32_t ts, bool marker)
             
             m_fua_packet[0] = (header & 0xe0) + 28; ///< 28: FUA
 
-            BYTE naltype = header & 0x1f;
+            uint8_t naltype = header & 0x1f;
             if (data_len == len - 1)
             {
                 naltype |= 0x80;    ///< first fragment of this NALU

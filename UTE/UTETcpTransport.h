@@ -82,7 +82,7 @@ protected:
     {
         if (!ec)
         {
-            __super::on_read(ec, bytes_transferred, manual);
+            UTETransport<UTETcpTransport, asio::ip::tcp::socket, asio::ip::tcp::endpoint>::on_read(ec, bytes_transferred, manual);
         }
         else if (ec != asio::error::operation_aborted)
         {
@@ -107,7 +107,7 @@ protected:
             }
         }
 
-        __super::on_write(ec, bytes_transferred);
+        UTETransport<UTETcpTransport, asio::ip::tcp::socket, asio::ip::tcp::endpoint>::on_write(ec, bytes_transferred);
     }
 
 private:

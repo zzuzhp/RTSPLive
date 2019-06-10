@@ -24,7 +24,7 @@ XUSleep(unsigned long milliseconds);
 void
 XUGetTimeText(std::string &text);
 
-uint64_t 
+uint64_t
 XUNTPTime();
 
 /////////////////////////////////////////////////////////////////////////////

@@ -213,10 +213,10 @@ public:
 #endif
         {
             XUMutexGuard mon(m_lock);
-#if defined(WIN32) || defined(_WIN32_WCE)
+#if defined(_WIN32)
             ::OutputDebugStringA(ss.str().c_str());
 #elif defined(ANDROID)
-            __android_log_print(prio, TAG, ss.str().c_str());
+            __android_log_print(prio, TAG, "%s", ss.str().c_str());
 #endif
         }
     }

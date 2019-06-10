@@ -2,6 +2,7 @@
 #include "UTEAcceptor.h"
 #include "UTETcpTransport.h"
 #include "UTEUdpTransport.h"
+#include "XUtil/XULog.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -13,7 +14,9 @@ UTECore::UTECore() : m_acceptor_observer(nullptr)
 
 UTECore::~UTECore()
 {
+    XU_FOOTPRINT
     stop();
+    XU_FOOTPRINT
 }
 
 std::shared_ptr<IUTEAcceptor>

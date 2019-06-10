@@ -190,7 +190,7 @@ public:
     
     void signal()
     {
-        m_mutex.Lock();
+        m_mutex.lock();
         
         m_signal = true;
         

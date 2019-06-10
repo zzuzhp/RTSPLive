@@ -10,13 +10,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
-
 class RTSPCore : public IRTSPLive,
                  public IRTSPMessagerSink,
                  public IRTSPClientSink
 {
 public:
-
     RTSPCore();
 
     ~RTSPCore();
