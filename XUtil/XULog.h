@@ -72,12 +72,12 @@ std::ostream & operator <<(std::ostream & lhs, const XULOGLevel & rhs)
 {
     switch (rhs)
     {
-        case LOG_LEVEL_VERBOSE: lhs << "[verbose]"; break;
-        case LOG_LEVEL_DEBUG:   lhs << "[debug  ]"; break;
-        case LOG_LEVEL_INFO:    lhs << "[info   ]"; break;
-        case LOG_LEVEL_WARNING: lhs << "[warning]"; break;
-        case LOG_LEVEL_ERROR:   lhs << "[error  ]"; break;
-        case LOG_LEVEL_FATAL:   lhs << "[fatal  ]"; break;
+        case LOG_LEVEL_VERBOSE: lhs << "[V]"; break;
+        case LOG_LEVEL_DEBUG:   lhs << "[D]"; break;
+        case LOG_LEVEL_INFO:    lhs << "[I]"; break;
+        case LOG_LEVEL_WARNING: lhs << "[W]"; break;
+        case LOG_LEVEL_ERROR:   lhs << "[E]"; break;
+        case LOG_LEVEL_FATAL:   lhs << "[F]"; break;
     }
 
     return lhs;
