@@ -16,6 +16,7 @@ RTSPCore::RTSPCore() : m_ute(nullptr),
 
 RTSPCore::~RTSPCore()
 {
+    XU_FOOTPRINT
     tear();
 }
 
@@ -43,9 +44,6 @@ RTSPCore::build(uint16_t listen_port)
             goto fail;
         }
 
-        create_logger<XULoggerSystem>();
-        create_logger<XULoggerConsole>();
-
         return true;
     }
 
@@ -61,18 +59,21 @@ RTSPCore::tear()
 {
     XUMutexGuard mon(m_lock);
 
-    //stop();
-
     if (m_ute)
     {
-        UTEDestroy(m_ute);
-        m_ute = nullptr;
+        m_ute->stop();
     }
 
     if (m_messager)
     {
         delete m_messager;
         m_messager = nullptr;
+    }
+
+    if (m_ute)
+    {
+        UTEDestroy(m_ute);
+        m_ute = nullptr;
     }
 
     if (m_sdpenc)
@@ -115,12 +116,10 @@ RTSPCore::add_stream(RTSP_MEDIA type, void *init_param)
     XUMutexGuard mon(m_lock);
 
     IAVStream * stream = create_stream(m_streamId++, type, init_param);
-    if (stream->avp_type() == -1)
-    {
-        stream->set_avp_type(m_pt++);
-    }
+    stream->set_avp_type(m_pt++);
 
     m_sdpenc->add_media(stream, stream->avp_type());
+
     m_streams.push_back(stream);
 
     return stream->stream_id();

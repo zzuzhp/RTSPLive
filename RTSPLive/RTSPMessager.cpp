@@ -2,6 +2,8 @@
 #include "RtcpPacket.h"
 #include "InterleavedFrame.h"
 
+#include <cstdlib>
+#include <cstdio>
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
 
@@ -46,6 +48,7 @@ RTSPMessager::RTSPMessager(IRTSPMessagerSink * sink, IUTE * ute, uint16_t port) 
 
 RTSPMessager::~RTSPMessager()
 {
+    XU_FOOTPRINT
     m_acceptor.reset();
 
     while (!m_clients.empty())
@@ -450,7 +453,7 @@ RTSPMessager::check_request(RTSPRequest * request)
 
     if (itr == m_methods.end())
     {
-        XULOG_E("unknown method: %s", request->method);
+        XULOG_E("unknown method: %s", request->method.name.c_str());
         return false;
     }
 
@@ -534,7 +537,7 @@ RTSPMessager::on_recv(std::shared_ptr<IUTETransport> transport, const char * dat
     uint32_t clientId = get_client_id(transport);
     if (!clientId)
     {
-        XULOG_E("unknown message from %s:%d", transport->remote_ip(), transport->remote_port());
+        XULOG_E("unknown message from %s:%d", transport->remote_ip().c_str(), transport->remote_port());
         return;
     }
 

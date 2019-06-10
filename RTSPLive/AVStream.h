@@ -6,6 +6,8 @@
 
 #include <string>
 #include <list>
+#include <cstdlib>
+#include <cstdint>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -31,9 +33,9 @@ public:
 
     virtual const std::string name() const = 0;
 
-    virtual void set_avp_type(char pt) = 0;
+    virtual void set_avp_type(uint8_t pt) = 0;
 
-    virtual const char avp_type() const = 0;
+    virtual const uint8_t avp_type() const = 0;
 
     virtual const int duration() const = 0;
 
@@ -51,7 +53,7 @@ class AVStream : public IAVStream
 protected:
 
     AVStream(uint32_t id) : m_id(id),
-                            m_pt(-1),
+                            m_pt(128),
                             m_type(RTSP_MEDIA_NULL),
                             m_duration(0),
                             m_bitrate(0),
@@ -71,9 +73,9 @@ protected:
 
     const std::string name() const { return m_name; }
     
-    void set_avp_type(char pt) { m_pt = pt; }
+    void set_avp_type(uint8_t pt) { m_pt = pt; }
 
-    const char avp_type() const { return m_pt; }
+    const uint8_t avp_type() const { return m_pt; }
 
     const int duration() const { return m_duration; }
 

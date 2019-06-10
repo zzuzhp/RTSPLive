@@ -45,7 +45,7 @@ public:
 
 protected:
 
-    UTETransport(asio::io_service &io, UTE_TRANSPORT_TYPE type) : UTEModule(io),
+    UTETransport(asio::io_service &io, UTE_TRANSPORT_TYPE type) : UTEModule<module>(io),
                                                                   m_observer(nullptr),
                                                                   m_type(type)
     {
@@ -84,7 +84,7 @@ protected:
 
             if (m_observer)
             {
-                m_observer->on_recv(shared_from_this(), data.data(), bytes_transferred);
+                m_observer->on_recv(this->shared_from_this(), data.data(), bytes_transferred);
             }
 
             read();
@@ -95,7 +95,7 @@ protected:
     {
         if (m_observer)
         {
-            m_observer->on_send(shared_from_this(), bytes_transferred);
+            m_observer->on_send(this->shared_from_this(), bytes_transferred);
         }
     }
 

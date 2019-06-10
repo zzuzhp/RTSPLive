@@ -1,8 +1,13 @@
 #include "RtpPacket.h"
 
-#include <windows.h>
-#include <WinSock2.h>
+#if defined(_WIN32)
+#include <Ws2tcpip.h>
+#else /// _WIN32
+#include <arpa/inet.h>
+#endif
 #include <new>
+#include <cstdlib>
+#include <string.h>
 
 #define MAX_PAYLOAD_BYTES (1024 * 63)
 

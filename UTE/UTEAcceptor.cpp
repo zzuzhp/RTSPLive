@@ -1,5 +1,6 @@
 #include "UTEAcceptor.h"
 #include "UTETcpTransport.h"
+#include "XUtil/XULog.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -12,6 +13,7 @@ UTEAcceptor::UTEAcceptor(asio::io_service &io) : UTEModule(io),
 
 UTEAcceptor::~UTEAcceptor()
 {
+    XU_FOOTPRINT
     cancel();
 }
 
@@ -54,6 +56,9 @@ UTEAcceptor::cancel()
         m_acceptor->cancel(ec);
 
         m_acceptor->close(ec);
+
+        m_acceptor.reset();
+        m_acceptor = nullptr;
     }
 }
 

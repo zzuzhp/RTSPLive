@@ -19,7 +19,8 @@ UTETcpTransport::~UTETcpTransport()
 const void
 UTETcpTransport::set_observer(IUTETransportObserver *observer)
 {
-    __super::set_observer(observer);
+    UTETransport<UTETcpTransport, asio::ip::tcp::socket, asio::ip::tcp::endpoint>::set_observer(observer);
+
     read();
 }
 
